@@ -36,21 +36,21 @@ function Transfer({ address, setBalance }) {
 
       // Sign the message
       const msgHash = keccak256(utf8ToBytes(JSON.stringify(mensaje)));
-      const signature = secp.sign(msgHash, privateKey);
+      const signature = await secp.sign(msgHash, privateKey);
+      console.log("signature: ", signature);
 
-      const { data: { balance } } = await server.post(`send`, {
+      const response = await server.post(`send`, {
         sender: address,
-        recipient: recipient,
+        recipient,
         amount: parseInt(sendAmount),
-        signature: {
-          r: signature.r.toString(), 
-          s: signature.s.toString(),
-          recovery: signature.recovery
-        }
+        signature: toHex(signature)
       });
 
-      setBalance(balance);
+
+
+      setBalance(response.data.balance);
     } catch (ex) {
+      alert(ex.message);
       alert(ex.response.data.message);
     }
   }
