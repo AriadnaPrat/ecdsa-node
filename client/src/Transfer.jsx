@@ -1,9 +1,23 @@
 import { useState } from "react";
 import server from "./server";
+import * as secp from 'ethereum-cryptography/secp256k1';
+import { hexToBytes, toHex } from "ethereum-cryptography/utils";
 
 function Transfer({ address, setBalance }) {
   const [sendAmount, setSendAmount] = useState("");
   const [recipient, setRecipient] = useState("");
+  const [privateKey] = useState(() => {
+  const savedKey = localStorage.getItem("userPrivateKey");
+    
+    if (savedKey) {
+      return hexToBytes(savedKey);
+    } else {
+      const newKey = secp256k1.utils.randomPrivateKey();
+      localStorage.setItem("userPrivateKey", toHex(newKey));
+      return newKey;
+    }
+  });
+  console.log("privatekey: ", toHex(privateKey));
 
   const setValue = (setter) => (evt) => setter(evt.target.value);
 
@@ -18,6 +32,7 @@ function Transfer({ address, setBalance }) {
         amount: parseInt(sendAmount),
         recipient,
       });
+      balance.signature = await secp.sign(keccak256(balance), privateKey);
       setBalance(balance);
     } catch (ex) {
       alert(ex.response.data.message);

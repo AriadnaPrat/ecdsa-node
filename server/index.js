@@ -1,3 +1,5 @@
+const { hexToBytes, toHex } = require("ethereum-cryptography/utils");
+const secp = require("ethereum-cryptography/secp256k1");
 const express = require("express");
 const app = express();
 const cors = require("cors");
@@ -7,9 +9,9 @@ app.use(cors());
 app.use(express.json());
 
 const balances = {
-  "0x1": 100,
-  "0x2": 50,
-  "0x3": 75,
+  [`0x01`]: 100,
+  [`0x02`]: 50,
+  [`0x03`]: 75,
 };
 
 app.get("/balance/:address", (req, res) => {
@@ -19,7 +21,21 @@ app.get("/balance/:address", (req, res) => {
 });
 
 app.post("/send", (req, res) => {
-  const { sender, recipient, amount } = req.body;
+  const { sender, recipient, amount, signature } = req.body;
+
+  const tx = {
+    sender: sender,
+    recipient: recipient,
+    amount: amount,
+    signature: signature
+  };
+  console.log(tx);
+  const pk = toHex(recoverPublicKeyFromMessage(mensaje, signature));
+  balances.push([pk, amount]);
+
+  if (pk !== sender) {
+    return res.status(400).send({ message: "La firma no corresponde al emisor (sender)!" });
+  }
 
   setInitialBalance(sender);
   setInitialBalance(recipient);
@@ -27,6 +43,13 @@ app.post("/send", (req, res) => {
   if (balances[sender] < amount) {
     res.status(400).send({ message: "Not enough funds!" });
   } else {
+
+    //check signature
+    if (!verifySignature(tx)){
+      res.status(400).send({ message: "Invalid signature!" });
+      return;
+    }
+
     balances[sender] -= amount;
     balances[recipient] += amount;
     res.send({ balance: balances[sender] });
