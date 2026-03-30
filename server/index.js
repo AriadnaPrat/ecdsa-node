@@ -34,6 +34,7 @@ app.post("/send", (req, res) => {
   balances[`0x${pk}`] = amount;
   console.log("pk: ", pk);
 
+  //TODO: delete 0x from sender
   //verify signature 1
   if (pk !== sender) {
     return res.status(400).send({ message: "Invalid signature! 1" });
