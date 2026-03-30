@@ -32,10 +32,11 @@ app.post("/send", (req, res) => {
   console.log(tx);
   const pk = toHex(recoverPublicKey(tx, signature));
   balances[`0x${pk}`] = amount;
+  console.log("pk: ", pk);
 
   //verify signature 1
   if (pk !== sender) {
-    return res.status(400).send({ message: "Invalid signature!" });
+    return res.status(400).send({ message: "Invalid signature! 1" });
   }
 
   setInitialBalance(sender);
@@ -47,7 +48,7 @@ app.post("/send", (req, res) => {
 
     //check signature 2
     if (!verifySignature(tx)){
-      res.status(400).send({ message: "Invalid signature!" });
+      res.status(400).send({ message: "Invalid signature! 2" });
       return;
     }
 
