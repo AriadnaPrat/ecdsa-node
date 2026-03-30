@@ -1,5 +1,6 @@
 const { hexToBytes, toHex } = require("ethereum-cryptography/utils");
 const secp = require("ethereum-cryptography/secp256k1");
+const { recoverPublicKey } = require("./keys");
 const express = require("express");
 const app = express();
 const cors = require("cors");
@@ -30,10 +31,11 @@ app.post("/send", (req, res) => {
   };
   console.log(tx);
   const pk = toHex(recoverPublicKey(signature));
-  balances.push([pk, amount]);
+  balances.push([`0x${pk}`, amount]);
 
+  //verify signature 1
   if (pk !== sender) {
-    return res.status(400).send({ message: "La firma no corresponde al emisor (sender)!" });
+    return res.status(400).send({ message: "Invalid signature!" });
   }
 
   setInitialBalance(sender);
@@ -43,7 +45,7 @@ app.post("/send", (req, res) => {
     res.status(400).send({ message: "Not enough funds!" });
   } else {
 
-    //check signature
+    //check signature 2
     if (!verifySignature(tx)){
       res.status(400).send({ message: "Invalid signature!" });
       return;
