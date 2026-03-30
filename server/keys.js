@@ -1,14 +1,15 @@
-import { secp256k1 } from 'ethereum-cryptography/secp256k1';
-import { keccak256 } from 'ethereum-cryptography/keccak';
-import { utf8ToBytes } from 'ethereum-cryptography/utils';
+const secp = require('ethereum-cryptography/secp256k1');
+const { keccak256 } = require('ethereum-cryptography/keccak');
+const { utf8ToBytes, hexToBytes } = require('ethereum-cryptography/utils');
 
 function recoverPublicKey(mensaje, signature) {
-    const { r, s, recovery } = signature;
+  const { signature: sigHex, recovery } = signature;
 
-    const msgHash = keccak256(utf8ToBytes(JSON.stringify(mensaje)));
-    const sig = new secp256k1.Signature(BigInt(r), BigInt(s), recovery);
+  const msgHash = keccak256(utf8ToBytes(JSON.stringify(mensaje)));
+  const sigBytes = hexToBytes(sigHex);
+  const publicKey = secp.recoverPublicKey(msgHash, sigBytes, recovery);
 
-    return sig.recoverPublicKey(msgHash);
+  return publicKey;
 }
 
 module.exports = {

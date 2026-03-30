@@ -43,7 +43,10 @@ function Transfer({ address, setBalance }) {
         sender: address,
         recipient,
         amount: parseInt(sendAmount),
-        signature: toHex(signature)
+        signature: {
+          signature: toHex(signature), 
+          recovery                  
+        }
       });
 
 

@@ -1,5 +1,4 @@
 const { hexToBytes, toHex } = require("ethereum-cryptography/utils");
-const secp = require("ethereum-cryptography/secp256k1");
 const { recoverPublicKey } = require("./keys");
 const express = require("express");
 const app = express();
@@ -30,7 +29,7 @@ app.post("/send", (req, res) => {
     amount: amount
   };
   console.log(tx);
-  const pk = toHex(recoverPublicKey(signature));
+  const pk = toHex(recoverPublicKey(tx, signature));
   balances.push([`0x${pk}`, amount]);
 
   //verify signature 1
