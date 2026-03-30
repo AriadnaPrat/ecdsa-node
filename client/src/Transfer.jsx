@@ -1,22 +1,25 @@
 import { useState } from "react";
 import server from "./server";
 import * as secp from 'ethereum-cryptography/secp256k1';
-import { hexToBytes, toHex } from "ethereum-cryptography/utils";
+import { keccak256 } from "ethereum-cryptography/keccak";
+import { hexToBytes, toHex, utf8ToBytes } from "ethereum-cryptography/utils";
 
 function Transfer({ address, setBalance }) {
   const [sendAmount, setSendAmount] = useState("");
   const [recipient, setRecipient] = useState("");
   const [privateKey] = useState(() => {
+
   const savedKey = localStorage.getItem("userPrivateKey");
     if (savedKey) {
       return hexToBytes(savedKey);
     } else {
-      const newKey = secp256k1.utils.randomPrivateKey();
+      const newKey = secp.utils.randomPrivateKey();
       localStorage.setItem("userPrivateKey", toHex(newKey));
       return newKey;
     }
   });
   console.log("privatekey: ", toHex(privateKey));
+  console.log("publickey: ", toHex(secp.getPublicKey(privateKey)));
 
   const setValue = (setter) => (evt) => setter(evt.target.value);
 
@@ -24,14 +27,33 @@ function Transfer({ address, setBalance }) {
     evt.preventDefault();
 
     try {
-      const {
-        data: { balance },
-      } = await server.post(`send`, {
+
+      const mensaje = {
         sender: address,
+        recipient: recipient,
         amount: parseInt(sendAmount),
-        recipient,
+      };
+
+      console.log("1. Mensaje creado:", mensaje);
+
+      const msgHash = keccak256(utf8ToBytes(JSON.stringify(mensaje)));
+      console.log("2. Hash creado:", toHex(msgHash));
+      
+      const signature = secp.sign(msgHash, privateKey);
+      console.log("3. Firma creada:", signature);
+      
+      console.log("4. Intentando enviar al servidor...");
+      const { data: { balance } } = await server.post(`send`, {
+        sender: address,
+        recipient: recipient,
+        amount: parseInt(sendAmount),
+        signature: {
+          r: signature.r.toString(), 
+          s: signature.s.toString(),
+          recovery: signature.recovery
+        }
       });
-      balance.signature = await secp.sign(keccak256(balance), privateKey);
+
       setBalance(balance);
     } catch (ex) {
       alert(ex.response.data.message);

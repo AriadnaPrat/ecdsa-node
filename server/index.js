@@ -26,11 +26,10 @@ app.post("/send", (req, res) => {
   const tx = {
     sender: sender,
     recipient: recipient,
-    amount: amount,
-    signature: signature
+    amount: amount
   };
   console.log(tx);
-  const pk = toHex(recoverPublicKeyFromMessage(mensaje, signature));
+  const pk = toHex(recoverPublicKey(signature));
   balances.push([pk, amount]);
 
   if (pk !== sender) {
