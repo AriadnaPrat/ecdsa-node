@@ -8,7 +8,6 @@ function Transfer({ address, setBalance }) {
   const [recipient, setRecipient] = useState("");
   const [privateKey] = useState(() => {
   const savedKey = localStorage.getItem("userPrivateKey");
-    
     if (savedKey) {
       return hexToBytes(savedKey);
     } else {
