@@ -34,15 +34,10 @@ function Transfer({ address, setBalance }) {
         amount: parseInt(sendAmount),
       };
 
-      console.log("1. Mensaje creado:", mensaje);
-
+      // Sign the message
       const msgHash = keccak256(utf8ToBytes(JSON.stringify(mensaje)));
-      console.log("2. Hash creado:", toHex(msgHash));
-      
       const signature = secp.sign(msgHash, privateKey);
-      console.log("3. Firma creada:", signature);
-      
-      console.log("4. Intentando enviar al servidor...");
+
       const { data: { balance } } = await server.post(`send`, {
         sender: address,
         recipient: recipient,
