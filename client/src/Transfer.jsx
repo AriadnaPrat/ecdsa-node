@@ -18,8 +18,6 @@ function Transfer({ address, setBalance }) {
       return newKey;
     }
   });
-  console.log("privatekey: ", toHex(privateKey));
-  console.log("publickey: ", toHex(secp.getPublicKey(privateKey)));
 
   const setValue = (setter) => (evt) => setter(evt.target.value);
 
@@ -53,8 +51,6 @@ function Transfer({ address, setBalance }) {
           recovery: recovery                  
         }
       });
-
-
 
       setBalance(response.data.balance);
     } catch (ex) {

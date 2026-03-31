@@ -16,6 +16,10 @@ const balances = {
 
 app.get("/balance/:address", (req, res) => {
   const { address } = req.params;
+
+  // Initialize balance for new addresses
+  setInitialBalance(address)
+
   const balance = balances[address] || 0;
   res.send({ balance });
 });
@@ -26,18 +30,14 @@ app.post("/send", (req, res) => {
   const tx = {
     sender: sender,
     recipient: recipient,
-    amount: amount,
-    signature: signature
+    amount: amount
   };
-  console.log(tx);
-  const pk = toHex(recoverPublicKey(tx, signature));
-  balances[`0x${pk}`] = amount;
-  console.log("pk: ", pk);
 
-  //TODO: delete 0x from sender
-  //verify signature 1
-  if (pk !== sender) {
-    return res.status(400).send({ message: "Invalid signature! 1" });
+  const pk = toHex(recoverPublicKey(tx, signature));
+
+  //verify signature
+  if ( `0x${pk}` !== sender) {
+    return res.status(400).send({ message: "Invalid signature!" });
   }
 
   setInitialBalance(sender);
@@ -46,12 +46,6 @@ app.post("/send", (req, res) => {
   if (balances[sender] < amount) {
     res.status(400).send({ message: "Not enough funds!" });
   } else {
-
-    //check signature 2
-    if (!verifySignature(tx)){
-      res.status(400).send({ message: "Invalid signature! 2" });
-      return;
-    }
 
     balances[sender] -= amount;
     balances[recipient] += amount;
@@ -65,6 +59,6 @@ app.listen(port, () => {
 
 function setInitialBalance(address) {
   if (!balances[address]) {
-    balances[address] = 0;
+    balances[address] = 100;
   }
 }
